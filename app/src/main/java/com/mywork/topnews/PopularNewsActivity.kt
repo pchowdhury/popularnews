@@ -7,7 +7,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.view.View
 import com.mywork.topnews.model.Article
-import com.mywork.topnews.model.ArticleViewModel
+import com.mywork.topnews.viewmodel.ArticleViewModel
 import com.mywork.topnews.model.ModelResponse
 import kotlinx.android.synthetic.main.activity_news.*
 

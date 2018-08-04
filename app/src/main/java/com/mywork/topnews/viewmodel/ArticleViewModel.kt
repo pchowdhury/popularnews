@@ -1,8 +1,10 @@
-package com.mywork.topnews.model
+package com.mywork.topnews.viewmodel
 
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import com.mywork.topnews.api.ArticleWebService
+import com.mywork.topnews.model.Article
+import com.mywork.topnews.model.ModelResponse
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
