@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">TopNews</string>
+    <string name="app_name">NY Times most popular</string>
     <string name="title_feed_detail">Feed Detail</string>
 </resources>

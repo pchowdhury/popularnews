@@ -10,7 +10,6 @@ import com.mywork.topnews.model.Article
 import com.mywork.topnews.model.ArticleViewModel
 import com.mywork.topnews.model.ModelResponse
 import kotlinx.android.synthetic.main.activity_news.*
-import kotlinx.android.synthetic.main.feed_list.*
 
 
 /**
@@ -27,8 +26,12 @@ class PopularNewsActivity : AppCompatActivity(), AppCommunicator {
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
      */
+    private val TAG_LIST = "list"
+    private val TAG_DETAIL = "detail"
+
     private var twoPane: Boolean = false
     lateinit var viewModel: ArticleViewModel
+    var lastIndex = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +39,7 @@ class PopularNewsActivity : AppCompatActivity(), AppCommunicator {
         val toolbar = findViewById<View>(R.id.toolbar) as Toolbar
         setSupportActionBar(toolbar)
         toolbar.setNavigationOnClickListener { onBackPressed() }
-
+        resumeState(savedInstanceState)
         if (feed_detail_container != null) {
             // The detail container view will be present only in the
             // large-screen layouts (res/values-w900dp).
@@ -47,6 +50,12 @@ class PopularNewsActivity : AppCompatActivity(), AppCommunicator {
         viewModel = ViewModelProviders.of(this).get(ArticleViewModel::class.java)
         viewModel.feedsResponse.observe(this, Observer { response -> onReceiveUpdate(response) })
         viewModel.loadArticles()
+    }
+
+    private fun resumeState(savedInstanceState: Bundle?){
+        if (savedInstanceState != null) {
+            lastIndex = savedInstanceState.getInt(ArticleListFragment.ARG_SELECTED_INDEX, -1)
+        }
     }
 
     private fun onReceiveUpdate(response: ModelResponse?) {
@@ -73,11 +82,13 @@ class PopularNewsActivity : AppCompatActivity(), AppCommunicator {
     }
 
     override fun onBackPressed() {
+        if(!hasTwoPane()) {
+            showBackButton(!isShowingDetails())
+        }
         super.onBackPressed()
-        showBackButton(!hasTwoPane() && isShowingDetails())
     }
 
-    fun showBackButton(show:Boolean){
+    private fun showBackButton(show:Boolean){
         if(!show){
             supportActionBar?.title = getString(R.string.app_name)
         }
@@ -85,7 +96,7 @@ class PopularNewsActivity : AppCompatActivity(), AppCommunicator {
         supportActionBar?.setDisplayShowHomeEnabled(show)
     }
     private fun isShowingDetails(): Boolean =
-            supportFragmentManager.findFragmentById(R.id.feed_detail_container) is ArticleDetailFragment
+            supportFragmentManager.findFragmentByTag(TAG_DETAIL) !=null
 
     override fun hasTwoPane() = findViewById<View>(R.id.feed_detail_container) != null
 
@@ -99,7 +110,7 @@ class PopularNewsActivity : AppCompatActivity(), AppCommunicator {
         if (hasTwoPane()) {
             supportFragmentManager
                     .beginTransaction()
-                    .replace(R.id.feed_detail_container, fragment)
+                    .replace(R.id.feed_detail_container, fragment, TAG_DETAIL)
                     .commit()
         } else {
             supportActionBar?.title = title
@@ -107,20 +118,24 @@ class PopularNewsActivity : AppCompatActivity(), AppCommunicator {
             supportFragmentManager
                     .beginTransaction()
                     .addToBackStack(null)
-                    .add(R.id.container, fragment)
+                    .add(R.id.container, fragment, TAG_DETAIL)
                     .commit()
         }
     }
 
     private fun showList() {
-        val fragment = ArticleListFragment()
+        val fragment = ArticleListFragment().apply {
+            arguments = Bundle().apply {
+                putInt(ArticleListFragment.ARG_SELECTED_INDEX, lastIndex)
+            }
+        }
         supportActionBar?.title = getString(R.string.app_name)
         showBackButton(false)
         fragment.loadList()
-            supportFragmentManager
-                    .beginTransaction()
-                    .replace(R.id.container, fragment)
-                    .commit()
+        supportFragmentManager
+                .beginTransaction()
+                .replace(R.id.container, fragment, TAG_LIST)
+                .commit()
     }
 
     override fun getArticles(): List<Article> =
@@ -130,4 +145,14 @@ class PopularNewsActivity : AppCompatActivity(), AppCommunicator {
                 mutableListOf()
             }
 
+
+    override fun onSaveInstanceState(outState: Bundle?) {
+        super.onSaveInstanceState(outState)
+        var lastIndex = -1
+        val f = supportFragmentManager.findFragmentByTag(TAG_LIST)
+        if(f!=null){
+            lastIndex = (f as ArticleListFragment).selctedItemIndex
+        }
+        outState?.putInt(ArticleListFragment.ARG_SELECTED_INDEX, lastIndex)
+    }
 }

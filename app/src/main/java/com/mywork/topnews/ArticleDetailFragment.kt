@@ -21,7 +21,6 @@ class ArticleDetailFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        retainInstance = true
         arguments?.let {
             if (it.containsKey(ARG_ITEM_URL)) {
                 // Load the dummy content specified by the fragment

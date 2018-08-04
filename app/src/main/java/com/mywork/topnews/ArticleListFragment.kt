@@ -26,16 +26,13 @@ import kotlinx.android.synthetic.main.feed_list_content.view.*
  */
 class ArticleListFragment : Fragment() {
 
-    val ARG_SELECTED_INDEX = "selectedIndex"
-
+    companion object {
+        val ARG_SELECTED_INDEX = "selectedIndex"
+    }
     var listener: AppCommunicator? = null
     var recyclerView: RecyclerView? = null
     var selctedItemIndex = -1
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        retainInstance = true
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -46,21 +43,11 @@ class ArticleListFragment : Fragment() {
         val dividerItemDecoration = DividerItemDecoration(context,
                 manager.orientation)
         recyclerView?.addItemDecoration(dividerItemDecoration)
+        if (arguments != null) {
+            selctedItemIndex = arguments!!.getInt(ARG_SELECTED_INDEX, -1)
+        }
         loadList()
         return rootView
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        if (savedInstanceState != null) {
-            selctedItemIndex = savedInstanceState.getInt(ARG_SELECTED_INDEX, -1)
-        }
-
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putInt(ARG_SELECTED_INDEX, selctedItemIndex)
     }
 
     fun loadList() {
@@ -71,9 +58,11 @@ class ArticleListFragment : Fragment() {
     }
 
     private fun showDefault() {
-        if (listener!!.hasTwoPane() && selctedItemIndex==-1 && recyclerView!!.childCount>0) {
+        if (listener!!.hasTwoPane() && selctedItemIndex == -1 && recyclerView!!.childCount > 0) {
             selctedItemIndex = 0
-            recyclerView?.getChildAt(0)?.performClick()
+        }
+        if (selctedItemIndex != -1) {
+            recyclerView?.getChildAt(selctedItemIndex)?.performClick()
         }
     }
 
