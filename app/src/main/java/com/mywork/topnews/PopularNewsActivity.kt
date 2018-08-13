@@ -70,19 +70,11 @@ class PopularNewsActivity : AppCompatActivity(), AppCommunicator {
                 }
                 ModelResponse.Error -> {
                     showProgress(false)
-                    if (response.error is UnknownHostException) {
-                        onHandleError(NoInternetException())
-                    } else {
-                        onHandleError(response.error)
-                    }
+                    onHandleError(response.error)
                 }
                 ModelResponse.Success -> {
                     showProgress(false)
-                    if(response.status == 200){
-                        onHandleError(NewsException())
-                    }else{
-                        showList()
-                    }
+                    showList()
                 }
             }
         }
@@ -96,14 +88,14 @@ class PopularNewsActivity : AppCompatActivity(), AppCommunicator {
         }
     }
 
-    private fun showRetryDialog(message:String){
-      AlertDialog.Builder(this)
-        .setMessage(message)
-                .setPositiveButton(R.string.label_retry) { dialog, _->
-                    viewModel. fetchArticles()
+    private fun showRetryDialog(message: String) {
+        AlertDialog.Builder(this)
+                .setMessage(message)
+                .setPositiveButton(R.string.label_retry) { dialog, _ ->
+                    viewModel.fetchArticles()
                     dialog.dismiss()
                 }
-                .setNegativeButton(R.string.label_exit) { dialog, _->
+                .setNegativeButton(R.string.label_exit) { dialog, _ ->
                     dialog.dismiss()
                     finish()
                 }.create().show()
