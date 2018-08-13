@@ -54,13 +54,27 @@ dependencies {
     implementation "android.arch.lifecycle:runtime:1.1.1"
     annotationProcessor "android.arch.lifecycle:compiler:1.1.1"
 
-    implementation "com.squareup.retrofit2:adapter-rxjava2:2.3.0"
+//    implementation "com.squareup.retrofit2:adapter-rxjava2:2.3.0"
+//    implementation 'com.google.code.gson:gson:2.8.2'
+//    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+//    implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
+//    implementation 'com.squareup.picasso:picasso:2.71828'
+//    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+//    implementation 'android.arch.lifecycle:extensions:1.1.1'
+
+
     implementation 'com.google.code.gson:gson:2.8.2'
-    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
-    implementation 'com.squareup.picasso:picasso:2.71828'
-    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
     implementation 'android.arch.lifecycle:extensions:1.1.1'
+
+    implementation "com.squareup.okhttp3:okhttp:$okhttpVersion"
+    implementation "com.squareup.okhttp3:logging-interceptor:$okhttpVersion"
+    implementation ("com.squareup.retrofit2:retrofit:$retrofitVersion"){
+        // exclude Retrofit’s OkHttp peer-dependency module and define your own module import
+        exclude module: 'okhttp'
+    }
+    implementation "com.squareup.retrofit2:adapter-rxjava2:2.3.0"
+    implementation "com.squareup.retrofit2:converter-gson:$retrofitVersion"
+
 
     //Glide
     implementation 'com.github.bumptech.glide:glide:3.7.0'

@@ -1,10 +1,14 @@
 package com.mywork.topnews.api
 
+import com.mywork.topnews.BuildConfig
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Headers
+
 
 interface ArticleWebService {
     @Headers("Content-Type: application/json;charset=UTF-8")
@@ -17,12 +21,17 @@ interface ArticleWebService {
         const val BASE_URL = "http://api.nytimes.com/svc/mostpopular/v2/mostviewed/"
 
         fun create(): ArticleWebService {
-
+            val client = OkHttpClient().newBuilder()
+                    .addInterceptor(HttpLoggingInterceptor().apply {
+                        level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
+                    })
+                    .build()
             val retrofit = Retrofit.Builder()
                     .addCallAdapterFactory(
                             RxJava2CallAdapterFactory.create())
                     .addConverterFactory(
                             GsonConverterFactory.create())
+                    .client(client)
                     .baseUrl(BASE_URL)
                     .build()
 

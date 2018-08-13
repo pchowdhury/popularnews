@@ -3,13 +3,17 @@ package com.mywork.topnews
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.view.View
+import com.mywork.topnews.error.NewsException
+import com.mywork.topnews.error.NoInternetException
 import com.mywork.topnews.model.Article
-import com.mywork.topnews.viewmodel.ArticleViewModel
 import com.mywork.topnews.model.ModelResponse
+import com.mywork.topnews.viewmodel.ArticleViewModel
 import kotlinx.android.synthetic.main.activity_news.*
+import java.net.UnknownHostException
 
 
 /**
@@ -30,8 +34,8 @@ class PopularNewsActivity : AppCompatActivity(), AppCommunicator {
     private val TAG_DETAIL = "detail"
 
     private var twoPane: Boolean = false
-    lateinit var viewModel: ArticleViewModel
-    var lastIndex = -1
+    private lateinit var viewModel: ArticleViewModel
+    private var lastIndex = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,7 +56,7 @@ class PopularNewsActivity : AppCompatActivity(), AppCommunicator {
         viewModel.loadArticles()
     }
 
-    private fun resumeState(savedInstanceState: Bundle?){
+    private fun resumeState(savedInstanceState: Bundle?) {
         if (savedInstanceState != null) {
             lastIndex = savedInstanceState.getInt(ArticleListFragment.ARG_SELECTED_INDEX, -1)
         }
@@ -66,44 +70,75 @@ class PopularNewsActivity : AppCompatActivity(), AppCommunicator {
                 }
                 ModelResponse.Error -> {
                     showProgress(false)
+                    if (response.error is UnknownHostException) {
+                        onHandleError(NoInternetException())
+                    } else {
+                        onHandleError(response.error)
+                    }
                 }
                 ModelResponse.Success -> {
                     showProgress(false)
-                    showList()
+                    if(response.status == 200){
+                        onHandleError(NewsException())
+                    }else{
+                        showList()
+                    }
                 }
             }
         }
     }
 
-    fun showProgress(show: Boolean) {
+    private fun onHandleError(error: Throwable?) {
+        when (error) {
+            is NoInternetException -> showRetryDialog(getString(R.string.error_no_internet))
+            is NewsException -> showRetryDialog(getString(R.string.error_news_not_available))
+            else -> showRetryDialog(getString(R.string.error_no_internet))
+        }
+    }
+
+    private fun showRetryDialog(message:String){
+      AlertDialog.Builder(this)
+        .setMessage(message)
+                .setPositiveButton(R.string.label_retry) { dialog, _->
+                    viewModel. fetchArticles()
+                    dialog.dismiss()
+                }
+                .setNegativeButton(R.string.label_exit) { dialog, _->
+                    dialog.dismiss()
+                    finish()
+                }.create().show()
+    }
+
+    private fun showProgress(show: Boolean) {
         progress.visibility = when (show) {true -> View.VISIBLE
             else -> View.GONE
         }
     }
 
     override fun onBackPressed() {
-        if(!hasTwoPane()) {
+        if (!hasTwoPane()) {
             showBackButton(!isShowingDetails())
         }
         super.onBackPressed()
     }
 
-    private fun showBackButton(show:Boolean){
-        if(!show){
+    private fun showBackButton(show: Boolean) {
+        if (!show) {
             supportActionBar?.title = getString(R.string.app_name)
         }
         supportActionBar?.setDisplayHomeAsUpEnabled(show)
         supportActionBar?.setDisplayShowHomeEnabled(show)
     }
+
     private fun isShowingDetails(): Boolean =
-            supportFragmentManager.findFragmentByTag(TAG_DETAIL) !=null
+            supportFragmentManager.findFragmentByTag(TAG_DETAIL) != null
 
     override fun hasTwoPane() = findViewById<View>(R.id.feed_detail_container) != null
 
-    override fun showDetails(title:String?, link: String?) {
+    override fun showDetails(title: String?, link: String?) {
         val fragment = ArticleDetailFragment().apply {
             arguments = Bundle().apply {
-                                putString(ArticleDetailFragment.ARG_ITEM_TITLE, title)
+                putString(ArticleDetailFragment.ARG_ITEM_TITLE, title)
                 putString(ArticleDetailFragment.ARG_ITEM_URL, link)
             }
         }
@@ -124,6 +159,7 @@ class PopularNewsActivity : AppCompatActivity(), AppCommunicator {
     }
 
     private fun showList() {
+        showProgress(false)
         val fragment = ArticleListFragment().apply {
             arguments = Bundle().apply {
                 putInt(ArticleListFragment.ARG_SELECTED_INDEX, lastIndex)
@@ -150,7 +186,7 @@ class PopularNewsActivity : AppCompatActivity(), AppCommunicator {
         super.onSaveInstanceState(outState)
         var lastIndex = -1
         val f = supportFragmentManager.findFragmentByTag(TAG_LIST)
-        if(f!=null){
+        if (f != null) {
             lastIndex = (f as ArticleListFragment).selctedItemIndex
         }
         outState?.putInt(ArticleListFragment.ARG_SELECTED_INDEX, lastIndex)

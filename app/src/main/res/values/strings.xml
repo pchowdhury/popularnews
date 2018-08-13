@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">NY Times most popular</string>
     <string name="title_feed_detail">Feed Detail</string>
+    <string name="error_no_internet">Please check your internet connections and try again.</string>
+    <string name="error_unknown_error">Experiencing unexpected error. Please try again later.</string>
+    <string name="error_news_not_available">News not available now. Please try again later.</string>
+    <string name="label_retry">Retry</string>
+    <string name="label_exit">Exit</string>
 </resources>
